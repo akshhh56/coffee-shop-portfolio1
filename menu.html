@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu | Lite Glass Aesthetic</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        /* --- THE VIBE: Blurred Background --- */
+        body {
+            color: #ffffff;
+            overflow-x: hidden;
+            background-color: #1a1a1a;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: url('https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover;
+            filter: blur(30px) brightness(0.4); 
+            z-index: -1;
+        }
+
+        /* --- PAGE TRANSITION OVERLAY --- */
+        .page-transition {
+            position: fixed; inset: 0; background: #000000; z-index: 9999;
+            pointer-events: none; transition: opacity 0.8s ease-in-out;
+        }
+        .page-transition.fade-out { opacity: 0; }
+
+        /* --- NAVIGATION --- */
+        nav { padding: 2rem 5%; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a { color: white; text-decoration: none; font-weight: 500; opacity: 0.8; transition: 0.3s; }
+        .nav-links a:hover { opacity: 1; transform: translateY(-2px); }
+
+        /* --- LITE SHEER GLASS EFFECT --- */
+        .glass-lite {
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        /* --- MENU LAYOUT & SECTIONS --- */
+        /* Added some padding to the bottom so the last section isn't cut off */
+        .page-wrapper { padding-bottom: 5rem; } 
+        
+        .menu-section { padding: 2rem 0 3rem 5%; }
+        .menu-title { font-size: 3rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -1px; opacity: 0.9;}
+
+        .horizontal-scroll {
+            display: flex; gap: 3rem; overflow-x: auto; padding-bottom: 2rem; padding-right: 5%;
+            scroll-snap-type: x mandatory; scrollbar-width: none;
+        }
+        .horizontal-scroll::-webkit-scrollbar { display: none; }
+
+        .menu-item {
+            flex: 0 0 280px; scroll-snap-align: start; cursor: pointer;
+            border-radius: 30px; padding: 2rem 1.5rem;
+            text-align: center; transition: 0.4s ease;
+        }
+        .menu-item:hover { transform: translateY(-10px); background: rgba(255, 255, 255, 0.08); }
+        
+        .item-img {
+            width: 200px; height: 200px; object-fit: contain; margin-bottom: 1.5rem;
+            filter: drop-shadow(0 15px 20px rgba(0,0,0,0.4)); transition: transform 0.4s ease;
+        }
+        .menu-item:hover .item-img { transform: scale(1.1); }
+        
+        .item-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .item-price { font-size: 1.2rem; color: #E5B789; font-weight: 700; }
+
+        /* --- SIDE DRAWER (LITE GLASS) --- */
+        .drawer-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+            opacity: 0; pointer-events: none; transition: 0.5s ease; z-index: 1000;
+        }
+        .drawer-overlay.active { opacity: 1; pointer-events: all; }
+
+        .side-drawer {
+            position: fixed; top: 0; right: 0; width: 450px; max-width: 100vw; height: 100vh;
+            z-index: 1001; padding: 4rem 3rem; display: flex; flex-direction: column;
+            border-left: 1px solid rgba(255, 255, 255, 0.15); 
+            transform: translateX(100%); transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .side-drawer.active { transform: translateX(0); }
+
+        .close-btn {
+            position: absolute; top: 1.5rem; right: 2rem; background: none; border: none;
+            font-size: 2rem; cursor: pointer; color: white; opacity: 0.6; transition: 0.3s;
+        }
+        .close-btn:hover { opacity: 1; transform: rotate(90deg); }
+
+        /* The Small to Big Animation */
+        .drawer-img {
+            width: 280px; height: 280px; object-fit: contain; margin: 0 auto 1.5rem auto;
+            filter: drop-shadow(0 25px 35px rgba(0,0,0,0.5));
+            transform: scale(0.1); opacity: 0; 
+            transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
+            transition-delay: 0.1s; 
+        }
+        .side-drawer.active .drawer-img { transform: scale(1.1); opacity: 1; }
+
+        .drawer-title { font-size: 2.8rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 0.2rem; }
+        .drawer-price { font-size: 1.8rem; font-weight: 700; color: #E5B789; margin-bottom: 1.5rem; }
+        .drawer-desc { font-size: 1rem; line-height: 1.6; color: #ccc; margin-bottom: 2rem; }
+
+        /* Actions */
+        .drawer-actions { margin-top: auto; display: flex; align-items: center; gap: 1.5rem; }
+        .qty-box {
+            display: flex; align-items: center;
+            border: 1px solid rgba(255,255,255,0.3); border-radius: 50px; padding: 0.5rem 1rem;
+        }
+        .qty-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: white; padding: 0 10px; }
+        .qty-num { font-size: 1.2rem; font-weight: 700; width: 30px; text-align: center; }
+
+        .order-btn {
+            flex: 1; background: white; color: black; border: none;
+            padding: 1.2rem; border-radius: 50px; font-size: 1rem; font-weight: 700;
+            cursor: pointer; transition: 0.3s;
+        }
+        .order-btn:hover { background: #E5B789; color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- Transition Overlay -->
+    <div class="page-transition" id="pageTransition"></div>
+
+    <nav>
+        <div class="logo">Matcha and Bean</div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-btn">Home</a>
+            <a href="menu.html" class="nav-btn">Menu</a>
+        </div>
+    </nav>
+
+    <div class="page-wrapper">
+        <!-- SECTION 1: SIGNATURES (COLD) -->
+        <section class="menu-section">
+            <h1 class="menu-title">Cold Signatures</h1>
+            
+            <div class="horizontal-scroll">
+                <div class="menu-item glass-lite" data-title="Iced Matcha" data-price="₹299" data-desc="Ceremonial grade matcha whisked with oat milk over hand-cut ice." data-img=iced-latte.png">
+                    <img src="iced-latte.png" alt="Matcha" class="item-img">
+                    <h2 class="item-title">Iced Matcha</h2>
+                    <p class="item-price">₹299</p>
+                </div>
+
+                <div class="menu-item glass-lite" data-title="Cold Brew" data-price="₹249" data-desc="Single-origin beans steeped for 24 hours. Incredibly smooth." data-img="brew.png">
+                    <img src="brew.png" alt="Cold Brew" class="item-img">
+                    <h2 class="item-title">Cold Brew</h2>
+                    <p class="item-price">₹249</p>
+                </div>
+                
+                <div class="menu-item glass-lite" data-title="Iced Vanilla Latte" data-price="₹249" data-desc="Espresso, cold milk, and rich Madagascar vanilla bean syrup." data-img="vanilla-latte.png">
+                    <img src="vanilla-latte.png" alt="Latte" class="item-img">
+                    <h2 class="item-title">Iced Vanilla Latte</h2>
+                    <p class="item-price">$₹249</p>
+                </div>
+
+                <div class="menu-item glass-lite" data-title="Caramel Macchiato" data-price="₹399" data-desc="Fresh espresso layered over cold milk and finished with thick caramel." data-img="caremel.png">
+                    <img src="caremel.png" alt="Macchiato" class="item-img">
+                    <h2 class="item-title">Caramel Macchiato</h2>
+                    <p class="item-price">₹399</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: HOT CLASSICS -->
+        <section class="menu-section">
+            <h1 class="menu-title">Hot Classics</h1>
+            
+            <div class="horizontal-scroll">
+                <div class="menu-item glass-lite" data-title="Double Espresso" data-price="₹299" data-desc="Two perfectly extracted shots of our dark roast house blend." data-img="double-ess.png">
+                    <img src="double-ess.png" alt="Espresso" class="item-img">
+                    <h2 class="item-title">Double Espresso</h2>
+                    <p class="item-price">₹299</p>
+                </div>
+
+                <div class="menu-item glass-lite" data-title="Cappuccino" data-price="₹349" data-desc="Equal parts espresso, steamed milk, and a thick layer of micro-foam." data-img="cappi.png">
+                    <img src="cappi.png" alt="Cappuccino" class="item-img">
+                    <h2 class="item-title">Cappuccino</h2>
+                    <p class="item-price">₹349</p>
+                </div>
+
+                <div class="menu-item glass-lite" data-title="Flat White" data-price="₹319" data-desc="Velvety steamed milk poured over a ristretto shot." data-img="white.png">
+                    <img src="white.png" alt="Flat White" class="item-img">
+                    <h2 class="item-title">Flat White</h2>
+                    <p class="item-price">₹319</p>
+                </div>
+                
+                <div class="menu-item glass-lite" data-title="Cafe Mocha" data-price="₹399" data-desc="Espresso combined with bittersweet mocha sauce and steamed milk." data-img="cafe-mocha.png">
+                    <img src="cafe-mocha.png" alt="Mocha" class="item-img">
+                    <h2 class="item-title">Cafe Mocha</h2>
+                    <p class="item-price">₹399</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: PASTRIES & BITES -->
+        <section class="menu-section">
+            <h1 class="menu-title">Pastries & Bites</h1>
+            
+            <div class="horizontal-scroll">
+                <div class="menu-item glass-lite" data-title="Butter Croissant" data-price="₹199" data-desc="Flaky, golden-brown croissant baked fresh every morning." data-img="butt-cross.png">
+                    <!-- TIP: Replace this PNG with a transparent Croissant PNG! -->
+                    <img src="butt-cross.png" alt="Croissant" class="item-img">
+                    <h2 class="item-title">Butter Croissant</h2>
+                    <p class="item-price">₹199</p>
+                </div>
+
+                <div class="menu-item glass-lite" data-title="Chocolate Cookie" data-price="₹169" data-desc="Warm, gooey cookie packed with dark chocolate chunks." data-img="choco-cookie.png">
+                    <img src="choco-cookie.png" alt="Cookie" class="item-img">
+                    <h2 class="item-title">Chocolate Cookie</h2>
+                    <p class="item-price">₹169</p>
+                </div>
+
+                <div class="menu-item glass-lite" data-title="Blueberry Muffin" data-price="₹179" data-desc="Soft muffin bursting with fresh blueberries and a sugar crust." data-img="blub-muffin.png">
+                    <img src="blub-muffin.png" alt="Muffin" class="item-img">
+                    <h2 class="item-title">Blueberry Muffin</h2>
+                    <p class="item-price">₹179</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- SIDE DRAWER -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <div class="side-drawer glass-lite" id="sideDrawer">
+        <button class="close-btn" id="closeDrawer">✕</button>
+        
+        <img src="" id="drawerImg" class="drawer-img">
+        
+        <h2 id="drawerTitle" class="drawer-title">Name</h2>
+        <p id="drawerPrice" class="drawer-price">$0.00</p>
+        <p id="drawerDesc" class="drawer-desc">Description</p>
+        
+        <div class="drawer-actions">
+            <div class="qty-box">
+                <button class="qty-btn" id="btnMinus">−</button>
+                <span class="qty-num" id="qtyNum">1</span>
+                <button class="qty-btn" id="btnPlus">+</button>
+            </div>
+            <button class="order-btn">Add to Order</button>
+        </div>
+    </div>
+
+    <script>
+        /* PAGE TRANSITION */
+        window.onload = () => { document.getElementById('pageTransition').classList.add('fade-out'); };
+        document.querySelectorAll('.nav-btn').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                let targetURL = this.href;
+                document.getElementById('pageTransition').classList.remove('fade-out');
+                setTimeout(() => { window.location.href = targetURL; }, 800);
+            });
+        });
+
+        /* SIDE DRAWER LOGIC */
+        const sideDrawer = document.getElementById('sideDrawer');
+        const drawerOverlay = document.getElementById('drawerOverlay');
+        const closeDrawerBtn = document.getElementById('closeDrawer');
+        const drawerImg = document.getElementById('drawerImg');
+        const drawerTitle = document.getElementById('drawerTitle');
+        const drawerDesc = document.getElementById('drawerDesc');
+        const drawerPrice = document.getElementById('drawerPrice');
+        const btnMinus = document.getElementById('btnMinus');
+        const btnPlus = document.getElementById('btnPlus');
+        const qtyNum = document.getElementById('qtyNum');
+        let currentQty = 1;
+
+        // Opens drawer for ANY menu item clicked
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                drawerTitle.innerText = item.getAttribute('data-title');
+                drawerDesc.innerText = item.getAttribute('data-desc');
+                drawerPrice.innerText = item.getAttribute('data-price');
+                drawerImg.src = item.getAttribute('data-img');
+                
+                currentQty = 1; qtyNum.innerText = currentQty;
+                
+                sideDrawer.classList.add('active');
+                drawerOverlay.classList.add('active');
+            });
+        });
+
+        // Close Drawer
+        function closeDrawer() {
+            sideDrawer.classList.remove('active');
+            drawerOverlay.classList.remove('active');
+        }
+        closeDrawerBtn.addEventListener('click', closeDrawer);
+        drawerOverlay.addEventListener('click', closeDrawer);
+
+        // Quantity Logic
+        btnPlus.addEventListener('click', () => { currentQty++; qtyNum.innerText = currentQty; });
+        btnMinus.addEventListener('click', () => { if (currentQty > 1) { currentQty--; qtyNum.innerText = currentQty; } });
+    </script>
+</body>
+</html>
