@@ -1,0 +1,107 @@
+/* style.css */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800&display=swap');
+
+:root {
+    --bg-green: #142e22; 
+    --glass-coffee: rgba(105, 68, 41, 0.25); 
+    --glass-border: rgba(255, 255, 255, 0.15);
+    --text-light: #f3efe8;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background-color: var(--bg-green);
+    color: var(--text-light);
+    background-image: radial-gradient(circle at 50% 0%, #1f4534 0%, #142e22 70%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    overflow-x: hidden; /* Prevents horizontal scrolling issues */
+}
+
+/* --- Global Glass Navigation --- */
+nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 1.5rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(20, 46, 34, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    z-index: 100;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.nav-links a:hover {
+    color: #D4A373; 
+}
+
+/* --- Reusable Glass Panel --- */
+.glass-panel {
+    background: var(--glass-coffee);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+    width: 100%;
+}
+
+.page-content {
+    padding-top: 120px; 
+    min-height: 100vh;
+}
+
+h1 { font-size: 4rem; margin-bottom: 1rem; }
+h2 { font-size: 2.5rem; margin-bottom: 1rem; color: #D4A373; }
+p { font-size: 1.1rem; line-height: 1.8; }
+
+/* =========================================
+   MOBILE RESPONSIVENESS (Phones & Tablets)
+   ========================================= */
+@media (max-width: 768px) {
+    nav {
+        flex-direction: column; /* Stacks logo and links on mobile */
+        gap: 1rem;
+        padding: 1rem 5%;
+    }
+    
+    .page-content {
+        padding-top: 140px; /* Extra space for stacked navbar */
+    }
+
+    h1 { font-size: 2.8rem; }
+    h2 { font-size: 2rem; }
+    
+    .glass-panel {
+        padding: 2rem 1.5rem; /* Smaller padding on phones */
+    }
+}

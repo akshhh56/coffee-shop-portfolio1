@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Table | Daily Roast</title>
+    <!-- Theme Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- BRAND THEME VARIABLES --- */
+        :root {
+            --bg-green: #142e22; 
+            --glass-coffee: rgba(105, 68, 41, 0.25); 
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-light: #f3efe8;
+            --accent: #D4A373;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+        body {
+            color: var(--text-light);
+            overflow-x: hidden;
+            background-color: var(--bg-green);
+            background-image: radial-gradient(circle at 50% 0%, #1f4534 0%, #142e22 70%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        /* --- PAGE TRANSITION --- */
+        .page-transition {
+            position: fixed; inset: 0; background: var(--bg-green); z-index: 9999;
+            pointer-events: none; transition: opacity 0.8s ease-in-out;
+        }
+        .page-transition.fade-out { opacity: 0; }
+
+        /* --- NAVIGATION --- */
+        nav { padding: 2rem 5%; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 100; }
+        .logo { font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a { color: var(--text-light); text-decoration: none; font-weight: 500; transition: 0.3s; }
+        .nav-links a:hover { color: var(--accent); transform: translateY(-2px); }
+
+        /* --- MULTI-STEP LAYOUT --- */
+        .booking-wrapper {
+            max-width: 900px; margin: 2rem auto 5rem auto; padding: 0 5%;
+        }
+
+        /* Progress Tracker */
+        .progress-tracker {
+            display: flex; justify-content: space-between; position: relative; margin-bottom: 3rem;
+        }
+        .progress-tracker::before {
+            content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 2px;
+            background: rgba(255,255,255,0.1); z-index: 1; transform: translateY(-50%);
+        }
+        .progress-step {
+            background: var(--bg-green); border: 2px solid rgba(255,255,255,0.2); width: 40px; height: 40px;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-weight: 800; z-index: 2; color: rgba(255,255,255,0.5); transition: 0.4s;
+        }
+        .progress-step.active { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 15px rgba(212, 163, 115, 0.4); }
+
+        /* Step Screens */
+        .step-screen { display: none; animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .step-screen.active { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- GLASS PANELS --- */
+        .glass-panel {
+            background: var(--glass-coffee); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: 20px; padding: 3rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2); text-align: center; position: relative;
+        }
+        h2 { font-size: 2.2rem; font-weight: 800; color: var(--accent); margin-bottom: 0.5rem; }
+        p.subtitle { font-size: 1rem; opacity: 0.8; margin-bottom: 2rem; font-weight: 300;}
+
+        /* --- 1. THE INTERACTIVE MAP STYLES --- */
+        .map-container {
+            position: relative; width: 100%; height: 400px; border-radius: 15px; overflow: hidden;
+            background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); margin-bottom: 2rem;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .map-marker {
+            position: absolute; width: 24px; height: 24px; background: var(--accent); border-radius: 50%;
+            cursor: pointer; transform: translate(-50%, -50%); display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 0 20px var(--accent); transition: 0.3s;
+        }
+        .map-marker::after {
+            content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%;
+            border: 2px solid var(--accent); animation: radarPulse 2s infinite ease-out;
+        }
+        @keyframes radarPulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
+
+        .map-marker:hover { transform: translate(-50%, -50%) scale(1.3); }
+        .marker-label {
+            position: absolute; top: -35px; background: rgba(0,0,0,0.8); padding: 5px 12px;
+            border-radius: 8px; font-size: 0.85rem; font-weight: 800; white-space: nowrap;
+            border: 1px solid var(--accent); opacity: 0; transition: 0.3s; pointer-events: none;
+        }
+        .map-marker:hover .marker-label { opacity: 1; top: -45px; }
+
+        .loc-1 { top: 30%; left: 25%; }
+        .loc-2 { top: 60%; left: 50%; }
+        .loc-3 { top: 40%; left: 75%; }
+
+        /* --- 2. TABLE GRID --- */
+        .table-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 15px; margin: 2rem 0; }
+        .cafe-table {
+            aspect-ratio: 1; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 1.2rem;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+        }
+        .cafe-table span { font-size: 0.75rem; font-weight: 300; opacity: 0.8; margin-top: 5px; }
+        .cafe-table:hover:not(.table-booked) { background: rgba(255, 255, 255, 0.1); transform: translateY(-4px); }
+        .table-booked { background: rgba(255, 75, 75, 0.1); border: 1px solid rgba(255, 75, 75, 0.3); color: #ff6b6b; cursor: not-allowed; opacity: 0.6; }
+        .table-selected { background: var(--accent); border-color: #fff; color: var(--bg-green); transform: scale(1.05); box-shadow: 0 10px 25px rgba(212, 163, 115, 0.4); }
+
+        .table-legend { display: flex; justify-content: center; gap: 15px; font-size: 0.9rem; margin-top: 1rem;}
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .dot { width: 14px; height: 14px; border-radius: 50%; }
+
+        /* --- 3. FORM INPUTS & BILLING --- */
+        .form-grid { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; text-align: left; }
+        .input-row { display: flex; gap: 1rem; }
+        .glass-input {
+            width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border);
+            padding: 1rem 1.2rem; border-radius: 12px; color: var(--text-light); font-size: 1rem;
+            transition: 0.3s; outline: none;
+        }
+        .glass-input:focus { border-color: var(--accent); background: rgba(255, 255, 255, 0.1); }
+        .glass-input::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+        .billing-card { background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 15px; border: 1px solid var(--glass-border); text-align: left; }
+        .bill-row { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 1rem; }
+        .total-row { font-size: 1.5rem; font-weight: 800; color: var(--accent); margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--glass-border); }
+
+        /* --- BUTTONS --- */
+        .nav-actions { display: flex; justify-content: space-between; margin-top: 2rem; gap: 1rem;}
+        .btn-ghost { background: transparent; border: 1px solid var(--glass-border); color: var(--text-light); padding: 1rem 2rem; border-radius: 12px; cursor: pointer; font-weight: 800; transition: 0.3s;}
+        .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+        .btn-primary { background: var(--accent); color: var(--bg-green); border: none; padding: 1rem 2rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; flex: 1;}
+        .btn-primary:hover { background: #e6b98a; transform: translateY(-2px); }
+        .btn-primary:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); cursor: not-allowed; transform: none; }
+
+        /* --- POPUP TICKET --- */
+        .popup-overlay {
+            position: fixed; inset: 0; background: rgba(20, 46, 34, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: 0.4s ease;
+        }
+        .popup-overlay.active { opacity: 1; pointer-events: all; }
+        
+        .ticket-popup {
+            background: var(--glass-coffee); border: 1px solid var(--glass-border);
+            border-radius: 20px; width: 90%; max-width: 400px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5); transform: scale(0.8); opacity: 0;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); overflow: hidden;
+        }
+        .popup-overlay.active .ticket-popup { transform: scale(1); opacity: 1; }
+        
+        .ticket-header { background: var(--accent); color: var(--bg-green); padding: 2rem; text-align: center; }
+        .ticket-header h2 { color: var(--bg-green); margin: 0; font-size: 2rem; font-weight: 800;}
+        .ticket-body { padding: 2rem; text-align: center; }
+        .ticket-detail { display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.2); padding: 10px 0; font-size: 0.95rem; }
+        
+        @media (max-width: 768px) {
+            nav { flex-direction: column; gap: 1rem; }
+            .glass-panel { padding: 2rem 1.5rem; }
+            h2 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Smooth Transition Cover -->
+    <div class="page-transition" id="pageTransition"></div>
+
+    <nav>
+        <div class="logo">Daily Roast</div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-btn">Home</a>
+            <a href="menu.html" class="nav-btn">Menu</a>
+        </div>
+    </nav>
+
+    <div class="booking-wrapper">
+        
+        <!-- PROGRESS TRACKER -->
+        <div class="progress-tracker">
+            <div class="progress-step active" id="dot1">1</div>
+            <div class="progress-step" id="dot2">2</div>
+            <div class="progress-step" id="dot3">3</div>
+        </div>
+
+        <!-- STEP 1: CAFE LOCATION MAP -->
+        <div class="step-screen active" id="step1">
+            <div class="glass-panel">
+                <h2>Select a Cafe</h2>
+                <p class="subtitle">Choose your preferred Daily Roast location from the grid map.</p>
+                
+                <div class="map-container">
+                    <div class="map-marker loc-1" onclick="window.selectLocation('Downtown District')">
+                        <span class="marker-label">Downtown District</span>
+                    </div>
+                    <div class="map-marker loc-2" onclick="window.selectLocation('The Glasshouse Area')">
+                        <span class="marker-label">The Glasshouse Area</span>
+                    </div>
+                    <div class="map-marker loc-3" onclick="window.selectLocation('Riverside Roast')">
+                        <span class="marker-label">Riverside Roast</span>
+                    </div>
+                </div>
+                <p style="opacity: 0.6; font-size: 0.9rem;">Tap a gold radar blip to continue.</p>
+            </div>
+        </div>
+
+        <!-- STEP 2: TABLE SELECTION -->
+        <div class="step-screen" id="step2">
+            <div class="glass-panel">
+                <h2>Select a Table</h2>
+                <p class="subtitle">Location: <span id="displayLocation" style="color: var(--accent); font-weight: 800;">None</span></p>
+                
+                <div class="table-grid" id="tableGrid"></div>
+                
+                <div class="table-legend">
+                    <div class="legend-item"><span class="dot" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border);"></span> Available</div>
+                    <div class="legend-item"><span class="dot" style="background: #ff6b6b;"></span> Booked</div>
+                    <div class="legend-item"><span class="dot" style="background: var(--accent);"></span> Selected</div>
+                </div>
+
+                <div class="nav-actions">
+                    <button class="btn-ghost" onclick="window.goToStep(1)">Back</button>
+                    <button class="btn-primary" id="btnToStep3" disabled onclick="window.goToStep(3)">Continue</button>
+                </div>
+            </div>
+        </div>
+        <!-- STEP 3: DETAILS & BILLING -->
+        <div class="step-screen" id="step3">
+            <div class="glass-panel">
+                <h2>Finalize Booking</h2>
+                <p class="subtitle">Complete your reservation for <span id="finalTableDisp" style="color:var(--accent); font-weight: 800;">Table</span>.</p>
+                
+                <form id="bookingForm">
+                    <div class="form-grid">
+                        <input type="text" id="bName" class="glass-input" placeholder="Reservation Name" required>
+                        <input type="email" id="bEmail" class="glass-input" placeholder="Email Address" required>
+                        <div class="input-row">
+                            <input type="date" id="bDate" class="glass-input" required>
+                            <input type="time" id="bTime" class="glass-input" required>
+                        </div>
+                    </div>
+                    
+                    <div class="billing-card">
+                        <div class="bill-row"><span>Booking Fee:</span><span>₹200.00</span></div>
+                        <div class="bill-row"><span>Taxes (GST):</span><span>₹50.00</span></div>
+                        <div class="bill-row total-row"><span>Amount to Pay:</span><span>₹250.00</span></div>
+                    </div>
+
+                    <div class="nav-actions">
+                        <button type="button" class="btn-ghost" onclick="window.goToStep(2)">Back</button>
+                        <button type="submit" class="btn-primary">Confirm & Pay</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- DIGITAL TICKET SUCCESS POPUP -->
+    <div class="popup-overlay" id="bookingSuccess">
+        <div class="ticket-popup">
+            <div class="ticket-header">
+                <h2>Confirmed ✓</h2>
+                <p style="margin-top: 5px; opacity: 0.8;">Daily Roast Reservation</p>
+            </div>
+            <div class="ticket-body">
+                <div class="ticket-detail"><span>Name:</span> <strong id="tName">Name</strong></div>
+                <div class="ticket-detail"><span>Cafe:</span> <strong id="tLoc">Location</strong></div>
+                <div class="ticket-detail"><span>Table:</span> <strong id="tTable">Table 0</strong></div>
+                <div class="ticket-detail"><span>Time:</span> <strong id="tTime">00:00</strong></div>
+                
+                <a href="index.html" class="btn-primary nav-btn" style="display: block; margin-top: 2rem; text-decoration: none;">Return to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- HIGH-PERFORMANCE PAGE TRANSITION --- */
+        document.addEventListener("DOMContentLoaded", () => {
+            // Give browser a moment to paint the page
+            setTimeout(() => {
+                const transitionLayer = document.getElementById('pageTransition');
+                if (transitionLayer) {
+                    transitionLayer.classList.add('fade-out');
+                    // Safety: completely hide the overlay so it never blocks clicks
+                    setTimeout(() => {
+                        transitionLayer.style.display = 'none';
+                    }, 800); 
+                }
+            }, 100); 
+        });
+
+        // Navigation Linking
+        document.querySelectorAll('.nav-btn').forEach(link => {
+            /** @param {Event} e */
+            link.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                const targetURL = /** @type {HTMLAnchorElement} */ (this).href;
+                const transitionLayer = document.getElementById('pageTransition');
+                
+                if (transitionLayer) {
+                    transitionLayer.style.display = 'block'; // Bring it back
+                    // Force reflow
+                    void transitionLayer.offsetWidth;
+                    transitionLayer.style.transition = "opacity 0.4s ease-in-out";
+                    transitionLayer.classList.remove('fade-out');
+                }
+                
+                setTimeout(() => { window.location.href = targetURL; }, 450);
+            });
+        });
+
+        /* --- MULTI-STEP BOOKING LOGIC --- */
+        /** @type {string} */ let selectedLocation = "";
+        /** @type {number|null} */ let selectedTable = null;
+
+        /** 
+         * @param {number} step 
+         */
+        window.goToStep = function(step) {
+            document.querySelectorAll('.step-screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.progress-step').forEach((d, index) => {
+                if (index < step) d.classList.add('active');
+                else d.classList.remove('active');
+            });
+            
+            const targetStep = document.getElementById('step' + step);
+            if (targetStep) targetStep.classList.add('active');
+        };
+
+        /** 
+         * @param {string} locName 
+         */
+        window.selectLocation = function(locName) {
+            selectedLocation = locName;
+            const displayLoc = document.getElementById('displayLocation');
+            if (displayLoc) displayLoc.innerText = locName;
+            window.goToStep(2);
+        };
+
+        /* --- TABLE GENERATION --- */
+        const tableGrid = document.getElementById('tableGrid');
+        const btnToStep3 = /** @type {HTMLButtonElement} */ (document.getElementById('btnToStep3'));
+        const finalTableDisp = document.getElementById('finalTableDisp');
+
+        if (tableGrid) {
+            for (let i = 1; i <= 15; i++) {
+                const tableEl = document.createElement('div');
+                const isBooked = Math.random() < 0.35; 
+                
+                tableEl.classList.add('cafe-table');
+                tableEl.classList.add(isBooked ? 'table-booked' : 'table-avail');
+                tableEl.innerHTML = `T-${i} <span>${isBooked ? 'Full' : '2-4 Seats'}</span>`;
+                
+                if (!isBooked) {
+                    tableEl.addEventListener('click', () => {
+                        document.querySelectorAll('.cafe-table').forEach(t => t.classList.remove('table-selected'));
+                        tableEl.classList.add('table-selected');
+                        selectedTable = i;
+                        
+                        if (btnToStep3) {
+                            btnToStep3.innerText = `Reserve Table ${i}`;
+                            btnToStep3.disabled = false;
+                        }
+                        if (finalTableDisp) {
+                            finalTableDisp.innerText = `Table ${i}`;
+                        }
+                    });
+                }
+                tableGrid.appendChild(tableEl);
+            }
+        }
+
+        /* --- FORM SUBMISSION & DIGITAL TICKET --- */
+        const bookingForm = document.getElementById('bookingForm');
+        if (bookingForm) {
+            /** @param {Event} e */
+            bookingForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const bNameInput = /** @type {HTMLInputElement} */ (document.getElementById('bName'));
+                const bDateInput = /** @type {HTMLInputElement} */ (document.getElementById('bDate'));
+                const bTimeInput = /** @type {HTMLInputElement} */ (document.getElementById('bTime'));
+
+                const tName = document.getElementById('tName');
+                const tLoc = document.getElementById('tLoc');
+                const tTable = document.getElementById('tTable');
+                const tTime = document.getElementById('tTime');
+
+                if (tName) tName.innerText = bNameInput.value;
+                if (tLoc) tLoc.innerText = selectedLocation;
+                if (tTable) tTable.innerText = `Table ${selectedTable}`;
+                if (tTime) tTime.innerText = `${bDateInput.value} @ ${bTimeInput.value}`;
+
+                const bookingSuccess = document.getElementById('bookingSuccess');
+                if (bookingSuccess) bookingSuccess.classList.add('active');
+            });
+        }
+    </script>
+</body>
+</html>

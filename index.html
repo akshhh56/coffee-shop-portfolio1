@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Roast | 3D Intro</title>
+    <!-- Outfit Font for Theme -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800&display=swap" rel="stylesheet">
+    
+    <!-- IMPORT GOOGLE'S 3D MODEL VIEWER -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
+    
+    <style>
+        /* --- BRAND THEME VARIABLES --- */
+        :root {
+            --bg-green: #142e22; 
+            --glass-coffee: rgba(105, 68, 41, 0.25); 
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-light: #f3efe8;
+            --accent: #D4A373;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+        body {
+            color: var(--text-light);
+            overflow-x: hidden; 
+            background-color: var(--bg-green);
+            background-image: radial-gradient(circle at 50% 0%, #1f4534 0%, #142e22 70%);
+            background-attachment: fixed;
+        }
+
+        /* --- PAGE TRANSITION OVERLAY --- */
+        .page-transition {
+            position: fixed; inset: 0; background: var(--bg-green); z-index: 9999;
+            pointer-events: none; transition: opacity 1s ease-in-out;
+        }
+        .page-transition.fade-out { opacity: 0; }
+
+        /* --- NAVIGATION --- */
+        nav { padding: 2rem 5%; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 100;}
+        .logo { font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a { color: var(--text-light); text-decoration: none; font-weight: 500; transition: 0.3s; }
+        .nav-links a:hover { color: var(--accent); transform: translateY(-2px); }
+
+        /* --- GLASS PANEL STYLING --- */
+        .glass-lite {
+            background: var(--glass-coffee);
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+        }
+
+        /* --- 3D MODEL CONTAINER --- */
+        .cup-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; 
+            z-index: 0; display: flex; justify-content: center; align-items: center;
+        }
+
+        .model-wrapper { pointer-events: auto; cursor: grab; }
+        .model-wrapper:active { cursor: grabbing; }
+
+        model-viewer {
+            width: 350px;
+            height: 350px;
+            animation: floatLevitate 5s ease-in-out infinite; 
+            filter: drop-shadow(0px 30px 40px rgba(0,0,0,0.6));
+            outline: none;
+        }
+
+        @keyframes floatLevitate {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-30px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* --- SCROLL SECTIONS --- */
+        .scrolly-wrapper { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; pointer-events: none;}
+        .scrolly-section { height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+        
+        .home-glass { max-width: 550px; text-align: center; padding: 3rem; pointer-events: auto;}
+        
+        h1 { font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; color: var(--text-light); }
+        .hero-quote { font-size: 1.3rem; line-height: 1.6; font-weight: 300; margin-bottom: 2rem; color: #fff; font-style: italic;}
+        p { font-size: 1.1rem; line-height: 1.8; font-weight: 300; margin-bottom: 1.5rem; opacity: 0.9;}
+        
+        /* --- ACTION BUTTONS --- */
+        .action-row { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 1.5rem; }
+        .btn-glass { 
+            text-decoration: none; font-size: 1rem; padding: 1rem 1.5rem; 
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); 
+            color: var(--text-light); border-radius: 12px; transition: 0.3s; font-weight: 500; 
+        }
+        .btn-glass:hover { background: rgba(255,255,255,0.1); color: var(--accent); }
+        .btn-primary { background: var(--accent); color: var(--bg-green); border: none; font-weight: 800; }
+        .btn-primary:hover { background: #e6b98a; color: var(--bg-green); transform: translateY(-2px); }
+        
+        /* Layout specific adjustments */
+        @media (min-width: 769px) {
+            .left-side { transform: translateX(-20vw); }
+            .right-side { transform: translateX(20vw); }
+            .center-side { transform: translateX(0); }
+        }
+        @media (max-width: 768px) {
+            h1 { font-size: 2.8rem; }
+            .home-glass { padding: 2rem 1.5rem; }
+        }
+
+        /* Elements to animate on load */
+        .reveal-elem { opacity: 0; transform: translateY(30px); }
+    </style>
+</head>
+<body>
+
+    <!-- Smooth Page Fading Transition -->
+    <div class="page-transition" id="pageTransition"></div>
+
+    <nav>
+        <div class="logo">Daily Roast</div>
+        <div class="nav-links">
+            <a href="menu.html" class="nav-btn">Menu</a>
+            <a href="about.html" class="nav-btn">About</a>
+        </div>
+    </nav>
+
+    <!-- THE 3D MODEL RENDERER -->
+    <div class="cup-container">
+        <div class="gsap-wrapper model-wrapper reveal-elem">
+            <model-viewer 
+                src="coffee.glb" 
+                alt="A 3D model of a coffee cup"
+                orientation="0deg 0deg -15deg" 
+                touch-action="pan-y" 
+                camera-controls 
+                disable-zoom 
+                shadow-intensity="1" 
+                environment-image="neutral"
+                exposure="1.2">
+            </model-viewer>
+        </div>
+    </div>
+
+    <!-- Scrolling Text Overlays -->
+    <div class="scrolly-wrapper">
+        
+        <!-- SECTION 1: THE ANIMATED HERO INTRO -->
+        <section class="scrolly-section">
+            <div class="glass-lite home-glass center-side">
+                <h1 class="reveal-elem" style="color: var(--accent);">Welcome.</h1>
+                
+                <p class="hero-quote reveal-elem">
+                    "Coffee at home? Or wanna discuss tea at cafe!!<br>
+                    We have both. You just tell.."
+                </p>
+                
+                <div class="action-row reveal-elem">
+                    <a href="menu.html" class="btn-glass nav-btn">☕ Order Delivery</a>
+                    <a href="booking.html" class="btn-glass btn-primary nav-btn">📅 Book a Table</a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- SECTION 2 -->
+        <section class="scrolly-section">
+            <div class="glass-lite home-glass right-side">
+                <h1 style="color: var(--accent);">Roasted.</h1>
+                <p>Sourced globally, roasted locally. Pure aesthetics, rich flavor. Interact with the 3D model to spin it!</p>
+            </div>
+        </section>
+        
+        <!-- SECTION 3 -->
+        <section class="scrolly-section">
+            <div class="glass-lite home-glass left-side">
+                <h1 style="color: var(--accent);">Poured.</h1>
+                <p>Ready to secure your spot or order to-go?</p>
+                <div class="action-row">
+                    <a href="menu.html" class="btn-glass nav-btn">View Menu</a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- GSAP Scrollytelling Script & Transition Logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script>
+        
+        /* --- HIGH-PERFORMANCE PAGE TRANSITION --- */
+        document.addEventListener("DOMContentLoaded", () => {
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    const transitionLayer = document.getElementById('pageTransition');
+                    if (transitionLayer) {
+                        transitionLayer.classList.add('fade-out');
+                    }
+                }, 150); 
+            });
+        });
+
+        document.querySelectorAll('.nav-btn').forEach(link => {
+            /** @param {Event} e */
+            link.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                const targetURL = /** @type {HTMLAnchorElement} */ (this).href;
+                const transitionLayer = document.getElementById('pageTransition');
+                
+                if (transitionLayer) {
+                    transitionLayer.style.transition = "opacity 0.4s ease-in-out";
+                    transitionLayer.classList.remove('fade-out');
+                }
+                
+                setTimeout(() => { window.location.href = targetURL; }, 450);
+            });
+        });
+
+        /* --- MULTI-STEP BOOKING LOGIC --- */
+        /** @type {string} */ let selectedLocation = "";
+        /** @type {number|null} */ let selectedTable = null;
+
+        /** 
+         * Moves the user to the next booking step
+         * @param {number} step 
+         */
+        window.goToStep = function(step) {
+            document.querySelectorAll('.step-screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.progress-step').forEach((d, index) => {
+                if (index < step) d.classList.add('active');
+                else d.classList.remove('active');
+            });
+            
+            const targetStep = document.getElementById('step' + step);
+            if (targetStep) targetStep.classList.add('active');
+        };
+
+        /** 
+         * Selects the cafe location from the map
+         * @param {string} locName 
+         */
+        window.selectLocation = function(locName) {
+            selectedLocation = locName;
+            const displayLoc = document.getElementById('displayLocation');
+            if (displayLoc) displayLoc.innerText = locName;
+            window.goToStep(2);
+        };
+
+        /* --- TABLE GENERATION --- */
+        const tableGrid = document.getElementById('tableGrid');
+        const btnToStep3 = /** @type {HTMLButtonElement} */ (document.getElementById('btnToStep3'));
+        const finalTableDisp = document.getElementById('finalTableDisp');
+
+        if (tableGrid) {
+            for (let i = 1; i <= 15; i++) {
+                const tableEl = document.createElement('div');
+                const isBooked = Math.random() < 0.35; 
+                
+                tableEl.classList.add('cafe-table');
+                tableEl.classList.add(isBooked ? 'table-booked' : 'table-avail');
+                tableEl.innerHTML = `T-${i} <span>${isBooked ? 'Full' : '2-4 Seats'}</span>`;
+                
+                if (!isBooked) {
+                    tableEl.addEventListener('click', () => {
+                        document.querySelectorAll('.cafe-table').forEach(t => t.classList.remove('table-selected'));
+                        tableEl.classList.add('table-selected');
+                        selectedTable = i;
+                        
+                        if (btnToStep3) {
+                            btnToStep3.innerText = `Reserve Table ${i}`;
+                            btnToStep3.disabled = false;
+                        }
+                        if (finalTableDisp) {
+                            finalTableDisp.innerText = `Table ${i}`;
+                        }
+                    });
+                }
+                tableGrid.appendChild(tableEl);
+            }
+        }
+
+        /* --- FORM SUBMISSION & DIGITAL TICKET --- */
+        const bookingForm = document.getElementById('bookingForm');
+        if (bookingForm) {
+            /** @param {Event} e */
+            bookingForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const bNameInput = /** @type {HTMLInputElement} */ (document.getElementById('bName'));
+                const bDateInput = /** @type {HTMLInputElement} */ (document.getElementById('bDate'));
+                const bTimeInput = /** @type {HTMLInputElement} */ (document.getElementById('bTime'));
+
+                const tName = document.getElementById('tName');
+                const tLoc = document.getElementById('tLoc');
+                const tTable = document.getElementById('tTable');
+                const tTime = document.getElementById('tTime');
+
+                if (tName) tName.innerText = bNameInput.value;
+                if (tLoc) tLoc.innerText = selectedLocation;
+                if (tTable) tTable.innerText = `Table ${selectedTable}`;
+                if (tTime) tTime.innerText = `${bDateInput.value} @ ${bTimeInput.value}`;
+
+                const bookingSuccess = document.getElementById('bookingSuccess');
+                if (bookingSuccess) bookingSuccess.classList.add('active');
+            });
+        }
+
+        /* --- PAGE LOAD REVEAL ANIMATIONS (FIXED) --- */
+        // Using DOMContentLoaded instead of window.onload so it reveals immediately!
+        document.addEventListener("DOMContentLoaded", () => {
+            // 1. Fade away the black/green loading screen instantly
+            const pageTransition = document.getElementById('pageTransition');
+            if (pageTransition) {
+                pageTransition.classList.add('fade-out');
+            }
+
+            // 2. Play the smooth cinematic intro animation!
+            setTimeout(() => {
+                if (typeof gsap !== 'undefined') {
+                    gsap.to(".reveal-elem", {
+                        y: 0,
+                        opacity: 1,
+                        duration: 1.2,
+                        stagger: 0.2, 
+                        ease: "power3.out"
+                    });
+                }
+            }, 300);
+        });
+
+        // Smooth Page Leaving Animation
+        document.querySelectorAll('.nav-btn').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                let targetURL = this.href;
+                const pageTransition = document.getElementById('pageTransition');
+                if (pageTransition) {
+                    pageTransition.classList.remove('fade-out');
+                }
+                setTimeout(() => {
+                    window.location.href = targetURL;
+                }, 800);
+            });
+        });
+
+        /* --- GSAP SCROLL ANIMATION --- */
+        if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+            gsap.registerPlugin(ScrollTrigger);
+            let mm = gsap.matchMedia();
+
+            // Desktop Animations
+            mm.add("(min-width: 769px)", () => {
+                let tl = gsap.timeline({ scrollTrigger: { trigger: ".scrolly-wrapper", start: "top top", end: "bottom bottom", scrub: 1 }});
+                
+                gsap.set(".gsap-wrapper", { x: "0vw", scale: 1 });
+                tl.to(".gsap-wrapper", { x: "-20vw", scale: 1.2, ease: "power1.inOut" }) 
+                  .to(".gsap-wrapper", { x: "20vw", scale: 1.6, ease: "power1.inOut" }); 
+            });
+
+            // Mobile Animations
+            mm.add("(max-width: 768px)", () => {
+                let tl = gsap.timeline({ scrollTrigger: { trigger: ".scrolly-wrapper", start: "top top", end: "bottom bottom", scrub: 1 }});
+                
+                gsap.set(".gsap-wrapper", { x: "0vw", y: "-5vh", scale: 0.8 });
+                tl.to(".gsap-wrapper", { scale: 1.1, y: "-10vh", ease: "power1.inOut" })
+                  .to(".gsap-wrapper", { scale: 1.4, y: "0vh", ease: "power1.inOut" });
+            });
+        }
+    </script>
+</body>
+</html>

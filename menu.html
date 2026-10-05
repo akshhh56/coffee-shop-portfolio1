@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu & Cart | Daily Roast</title>
+    <!-- Theme Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- BRAND THEME VARIABLES --- */
+        :root {
+            --bg-green: #142e22; 
+            --glass-coffee: rgba(105, 68, 41, 0.25); 
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-light: #f3efe8;
+            --accent: #D4A373;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+        body { 
+            color: var(--text-light); 
+            overflow-x: hidden; 
+            background-color: var(--bg-green);
+            background-image: radial-gradient(circle at 50% 0%, #1f4534 0%, #142e22 70%);
+            background-attachment: fixed;
+        }
+
+        /* --- PAGE TRANSITION --- */
+        .page-transition {
+            position: fixed; inset: 0; background: var(--bg-green); z-index: 9999;
+            pointer-events: none; transition: opacity 0.8s ease-in-out;
+        }
+        .page-transition.fade-out { opacity: 0; }
+
+        /* --- NAVIGATION --- */
+        nav { padding: 2rem 5%; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 100;}
+        .logo { font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a { color: var(--text-light); text-decoration: none; font-weight: 500; transition: 0.3s; }
+        .nav-links a:hover { color: var(--accent); transform: translateY(-2px); }
+
+        /* --- GLASS EFFECT --- */
+        .glass-lite {
+            background: var(--glass-coffee);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            border-radius: 30px;
+        }
+
+        /* --- SEARCH BAR --- */
+        .search-container { padding: 0 5% 2rem 5%; margin-top: 2rem;}
+        .search-input {
+            width: 100%; max-width: 600px; padding: 1.2rem 2rem;
+            border-radius: 50px; font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border);
+            color: var(--text-light); transition: 0.3s; 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            outline: none;
+        }
+        .search-input::placeholder { color: rgba(243, 239, 232, 0.5); font-weight: 300; }
+        .search-input:focus { border-color: var(--accent); background: rgba(255, 255, 255, 0.1); }
+
+        /* --- MENU LAYOUT --- */
+        .page-wrapper { padding-bottom: 5rem; } 
+        .menu-section { padding: 0 0 3rem 5%; transition: 0.4s; }
+        .menu-title { font-size: 3rem; font-weight: 800; margin-bottom: 2rem; letter-spacing: -1px; color: var(--text-light);}
+
+        .horizontal-scroll {
+            display: flex; gap: 3rem; overflow-x: auto; padding-bottom: 2rem; padding-right: 5%;
+            scroll-snap-type: x mandatory; scrollbar-width: none;
+        }
+        .horizontal-scroll::-webkit-scrollbar { display: none; }
+
+        .menu-item {
+            flex: 0 0 280px; scroll-snap-align: start; cursor: pointer;
+            padding: 2rem 1.5rem; text-align: center; transition: 0.4s ease;
+        }
+        .menu-item:hover { transform: translateY(-10px); background: rgba(255, 255, 255, 0.08); border-color: var(--accent); }
+        
+        .item-img {
+            width: 200px; height: 200px; object-fit: contain; margin-bottom: 1.5rem;
+            filter: drop-shadow(0 15px 20px rgba(0,0,0,0.6)); transition: transform 0.4s ease;
+        }
+        .menu-item:hover .item-img { transform: scale(1.1); }
+        .item-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .item-price { font-size: 1.3rem; color: var(--accent); font-weight: 800; }
+
+        /* --- FLOATING CART BUTTON --- */
+        .floating-cart {
+            position: fixed; bottom: 30px; right: 30px;
+            width: 70px; height: 70px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem; cursor: pointer; z-index: 900;
+            transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid var(--accent);
+        }
+        .floating-cart:hover { transform: scale(1.1); background: var(--accent); color: var(--bg-green); }
+        
+        .cart-badge {
+            position: absolute; top: 0; right: 0; background: var(--text-light); color: var(--bg-green);
+            font-size: 0.9rem; font-weight: 900; width: 24px; height: 24px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; border: 2px solid var(--bg-green);
+        }
+        .pop-anim { animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+        /* --- SIDE DRAWERS --- */
+        .drawer-overlay {
+            position: fixed; inset: 0; background: rgba(20, 46, 34, 0.7);
+            opacity: 0; pointer-events: none; transition: 0.5s ease; z-index: 1000;
+            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+        }
+        .drawer-overlay.active { opacity: 1; pointer-events: all; }
+
+        .side-drawer {
+            position: fixed; top: 0; right: 0; width: 450px; max-width: 100vw; height: 100vh;
+            z-index: 1001; padding: 4rem 3rem; display: flex; flex-direction: column;
+            border-left: 1px solid var(--glass-border); border-radius: 30px 0 0 30px;
+            transform: translateX(100%); transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .side-drawer.active { transform: translateX(0); }
+
+        .close-btn {
+            position: absolute; top: 1.5rem; right: 2rem; background: none; border: none;
+            font-size: 2rem; cursor: pointer; color: var(--text-light); opacity: 0.6; transition: 0.3s;
+        }
+        .close-btn:hover { opacity: 1; transform: rotate(90deg); color: var(--accent); }
+
+        /* Item Detail Drawer */
+        .drawer-img {
+            width: 250px; height: 250px; object-fit: contain; margin: 0 auto 1.5rem auto;
+            filter: drop-shadow(0 25px 35px rgba(0,0,0,0.6)); transform: scale(0.1); opacity: 0; 
+            transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease; transition-delay: 0.1s; 
+        }
+        #itemDrawer.active .drawer-img { transform: scale(1.1); opacity: 1; }
+        .drawer-title { font-size: 2.8rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 0.2rem; }
+        .drawer-price { font-size: 1.8rem; font-weight: 800; color: var(--accent); margin-bottom: 1.5rem; }
+        .drawer-desc { font-size: 1rem; line-height: 1.6; color: var(--text-light); opacity: 0.8; margin-bottom: 2rem; font-weight: 300; }
+        
+        .drawer-actions { margin-top: auto; display: flex; align-items: center; gap: 1rem; width: 100%; }
+        .qty-box { display: flex; align-items: center; border: 1px solid var(--glass-border); border-radius: 12px; padding: 0.5rem 1rem; }
+        .qty-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); padding: 0 10px; }
+        .qty-num { font-size: 1.2rem; font-weight: 800; width: 30px; text-align: center; color: var(--accent); }
+
+        .order-btn {
+            background: var(--accent); color: var(--bg-green); border: none; padding: 1.2rem; border-radius: 12px; 
+            font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: 0.3s; width: 100%;
+        }
+        .order-btn:hover { background: #e6b98a; transform: translateY(-2px); }
+        .drawer-actions .order-btn { flex: 1; width: auto; }
+
+        /* Cart Drawer */
+        .cart-header { font-size: 2.5rem; font-weight: 800; margin-bottom: 2rem; color: var(--accent);}
+        .cart-items-container { flex: 1; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem; }
+        .cart-items-container::-webkit-scrollbar, .checkout-scroll::-webkit-scrollbar { width: 4px; }
+        .cart-items-container::-webkit-scrollbar-thumb, .checkout-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+        
+        .cart-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 15px; margin-bottom: 1rem;
+            border: 1px solid var(--glass-border);
+        }
+        .cart-item-info h4 { font-size: 1.1rem; margin-bottom: 0.2rem; font-weight: 500; }
+        .cart-item-info p { color: var(--accent); font-weight: 800; font-size: 0.9rem;}
+        
+        .billing-section { background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--glass-border); }
+        .bill-row { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.95rem; color: var(--text-light); opacity: 0.9;}
+        .bill-row.total { font-size: 1.5rem; font-weight: 800; color: var(--accent); margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--glass-border); opacity: 1;}
+        .empty-cart-msg { text-align: center; color: var(--text-light); opacity: 0.6; margin-top: 3rem; font-style: italic; }
+
+        /* Checkout Form */
+        .checkout-scroll { 
+            flex: 1; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem; 
+            display: flex; flex-direction: column; gap: 1rem; 
+        }
+        .glass-input {
+            width: 100%; background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border); border-radius: 12px;
+            padding: 1rem; color: var(--text-light); font-size: 1rem; transition: 0.3s;
+            text-align: left; direction: ltr; outline: none;
+        }
+        .glass-input::placeholder { color: rgba(243, 239, 232, 0.5); font-weight: 300; }
+        .glass-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.1); }
+        textarea.glass-input { resize: none; font-family: inherit; }
+
+        /* --- CUSTOM POPUPS --- */
+        .popup-overlay {
+            position: fixed; inset: 0; background: rgba(20, 46, 34, 0.85);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
+        .popup-overlay.active { opacity: 1; pointer-events: all; }
+        
+        .popup-modal {
+            background: var(--glass-coffee); border: 1px solid var(--glass-border);
+            border-radius: 30px; padding: 3rem 2rem; text-align: center; max-width: 400px; width: 90%;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            transform: scale(0.8) translateY(30px); opacity: 0;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .popup-overlay.active .popup-modal { transform: scale(1) translateY(0); opacity: 1; }
+        
+        .popup-icon {
+            width: 80px; height: 80px; border-radius: 50%; color: var(--bg-green);
+            display: flex; justify-content: center; align-items: center; font-size: 3rem;
+            margin: 0 auto 1.5rem auto; font-weight: 800;
+        }
+        .icon-success { background: var(--accent); box-shadow: 0 10px 20px rgba(212, 163, 115, 0.4); }
+        .icon-error { background: #ff6b6b; box-shadow: 0 10px 20px rgba(255, 107, 107, 0.4); }
+
+        .popup-title { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; color: var(--text-light);}
+        .popup-text { font-size: 1rem; color: var(--text-light); opacity: 0.8; font-weight: 300; line-height: 1.6; margin-bottom: 2rem; }
+        .popup-btn {
+            background: var(--text-light); color: var(--bg-green); border: none; padding: 1rem 2.5rem; border-radius: 12px; 
+            font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: 0.3s;
+        }
+        .popup-btn:hover { background: var(--accent); }
+        .btn-error:hover { background: #ff6b6b; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="page-transition" id="pageTransition"></div>
+
+    <nav>
+        <div class="logo">Daily Roast</div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-btn">Home</a>
+            <a href="about.html" class="nav-btn">About</a>
+            <a href="booking.html" class="nav-btn">Book Table</a>
+        </div>
+    </nav>
+
+    <!-- FLOATING CART -->
+    <div class="floating-cart glass-lite" id="floatingCartBtn">
+        🛒<div class="cart-badge" id="cartBadge">0</div>
+    </div>
+
+    <div class="page-wrapper">
+        
+        <!-- SEARCH BAR -->
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search for coffee, matcha, pastries...">
+        </div>
+        
+        <!-- SECTION 1: SIGNATURES -->
+        <section class="menu-section" id="section-signatures">
+            <h1 class="menu-title">Cold Signatures</h1>
+            <div class="horizontal-scroll">
+                <div class="menu-item glass-lite" data-title="Iced Matcha" data-price="299" data-desc="Ceremonial grade matcha whisked with oat milk over hand-cut ice." data-img="iced-latte.png">
+                    <img src="iced-latte.png" alt="Matcha" class="item-img">
+                    <h2 class="item-title">Iced Matcha</h2>
+                    <p class="item-price">₹299</p>
+                </div>
+                <div class="menu-item glass-lite" data-title="Cold Brew" data-price="249" data-desc="Single-origin beans steeped for 24 hours. Incredibly smooth." data-img="brew.png">
+                    <img src="brew.png" alt="Cold Brew" class="item-img">
+                    <h2 class="item-title">Cold Brew</h2>
+                    <p class="item-price">₹249</p>
+                </div>
+                <div class="menu-item glass-lite" data-title="Iced Vanilla Latte" data-price="249" data-desc="Espresso, cold milk, and rich Madagascar vanilla bean syrup." data-img="vanilla-latte.png">
+                    <img src="vanilla-latte.png" alt="Latte" class="item-img">
+                    <h2 class="item-title">Iced Vanilla Latte</h2>
+                    <p class="item-price">₹249</p>
+                </div>
+                <div class="menu-item glass-lite" data-title="Caramel Macchiato" data-price="399" data-desc="Fresh espresso layered over cold milk and finished with thick caramel." data-img="caremel.png">
+                    <img src="caremel.png" alt="Macchiato" class="item-img">
+                    <h2 class="item-title">Caramel Macchiato</h2>
+                    <p class="item-price">₹399</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: HOT CLASSICS -->
+        <section class="menu-section" id="section-hot">
+            <h1 class="menu-title">Hot Classics</h1>
+            <div class="horizontal-scroll">
+                <div class="menu-item glass-lite" data-title="Double Espresso" data-price="299" data-desc="Two perfectly extracted shots of our dark roast house blend." data-img="double-ess.png">
+                    <img src="double-ess.png" alt="Espresso" class="item-img">
+                    <h2 class="item-title">Double Espresso</h2>
+                    <p class="item-price">₹299</p>
+                </div>
+                <div class="menu-item glass-lite" data-title="Cappuccino" data-price="349" data-desc="Equal parts espresso, steamed milk, and a thick layer of micro-foam." data-img="cappi.png">
+                    <img src="cappi.png" alt="Cappuccino" class="item-img">
+                    <h2 class="item-title">Cappuccino</h2>
+                    <p class="item-price">₹349</p>
+                </div>
+                <div class="menu-item glass-lite" data-title="Flat White" data-price="319" data-desc="Velvety steamed milk poured over a ristretto shot." data-img="white.png">
+                    <img src="white.png" alt="Flat White" class="item-img">
+                    <h2 class="item-title">Flat White</h2>
+                    <p class="item-price">₹319</p>
+                </div>
+                <div class="menu-item glass-lite" data-title="Cafe Mocha" data-price="399" data-desc="Espresso combined with bittersweet mocha sauce and steamed milk." data-img="cafe-mocha.png">
+                    <img src="cafe-mocha.png" alt="Mocha" class="item-img">
+                    <h2 class="item-title">Cafe Mocha</h2>
+                    <p class="item-price">₹399</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: PASTRIES & BITES -->
+        <section class="menu-section" id="section-pastries">
+            <h1 class="menu-title">Pastries & Bites</h1>
+            <div class="horizontal-scroll">
+                <div class="menu-item glass-lite" data-title="Butter Croissant" data-price="199" data-desc="Flaky, golden-brown croissant baked fresh every morning." data-img="butt-cross.png">
+                    <img src="butt-cross.png" alt="Croissant" class="item-img">
+                    <h2 class="item-title">Butter Croissant</h2>
+                    <p class="item-price">₹199</p>
+                </div>
+                <div class="menu-item glass-lite" data-title="Chocolate Cookie" data-price="169" data-desc="Warm, gooey cookie packed with dark chocolate chunks." data-img="choco-cookie.png">
+                    <img src="choco-cookie.png" alt="Cookie" class="item-img">
+                    <h2 class="item-title">Chocolate Cookie</h2>
+                    <p class="item-price">₹169</p>
+                </div>
+                <div class="menu-item glass-lite" data-title="Blueberry Muffin" data-price="179" data-desc="Soft muffin bursting with fresh blueberries and a sugar crust." data-img="blub-muffin.png">
+                    <img src="blub-muffin.png" alt="Muffin" class="item-img">
+                    <h2 class="item-title">Blueberry Muffin</h2>
+                    <p class="item-price">₹179</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- SHARED OVERLAY FOR ALL DRAWERS -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+
+    <!-- 1. ITEM DETAIL DRAWER -->
+    <div class="side-drawer glass-lite" id="itemDrawer">
+        <button class="close-btn" onclick="closeAllDrawers()">✕</button>
+        <img src="" id="drawerImg" class="drawer-img">
+        <h2 id="drawerTitle" class="drawer-title">Name</h2>
+        <p id="drawerPrice" class="drawer-price">₹0</p>
+        <p id="drawerDesc" class="drawer-desc">Description</p>
+        
+        <div class="drawer-actions">
+            <div class="qty-box">
+                <button class="qty-btn" id="btnMinus">−</button>
+                <span class="qty-num" id="qtyNum">1</span>
+                <button class="qty-btn" id="btnPlus">+</button>
+            </div>
+            <button class="order-btn" id="addToCartBtn">Add to Cart</button>
+        </div>
+    </div>
+
+    <!-- 2. CART & GST BILLING DRAWER -->
+    <div class="side-drawer glass-lite" id="cartDrawer">
+        <button class="close-btn" onclick="closeAllDrawers()">✕</button>
+        <h2 class="cart-header">Your Order</h2>
+        
+        <div class="cart-items-container" id="cartItemsContainer"></div>
+
+        <div class="billing-section">
+            <div class="bill-row"><span>Subtotal</span><span id="billSubtotal">₹0.00</span></div>
+            <div class="bill-row"><span>CGST (2.5%)</span><span id="billCgst">₹0.00</span></div>
+            <div class="bill-row"><span>SGST (2.5%)</span><span id="billSgst">₹0.00</span></div>
+            <div class="bill-row total"><span>Total</span><span id="billTotal">₹0.00</span></div>
+        </div>
+        
+        <button class="order-btn" id="proceedToPayBtn" style="margin-top: 1.5rem;">Proceed to Pay</button>
+    </div>
+
+   <!-- 3. CHECKOUT & ADDRESS DRAWER -->
+    <div class="side-drawer glass-lite" id="checkoutDrawer">
+        <button class="close-btn" onclick="closeAllDrawers()">✕</button>
+        <h2 class="cart-header">Delivery Details</h2>
+        
+        <div class="checkout-scroll">
+            <input type="text" id="custName" class="glass-input" placeholder="Full Name" required>
+            <input type="tel" id="custPhone" class="glass-input" placeholder="Phone Number (+91)" required>
+            <textarea id="custAddress" class="glass-input" rows="3" placeholder="Complete Address (House/Flat No, Street, Area)" required></textarea>
+            <input type="text" id="custLandmark" class="glass-input" placeholder="Landmark (Optional)">
+            <input type="text" id="custPincode" class="glass-input" placeholder="PIN Code" required>
+        </div>
+
+        <div class="billing-section" style="margin-top: auto; margin-bottom: 1.5rem;">
+            <div class="bill-row total" style="border: none; padding: 0; margin: 0; align-items: center; gap: 10px;">
+                <span style="white-space: nowrap;">Amount to Pay</span>
+                <span id="checkoutTotalAmount">₹0.00</span>
+            </div>
+        </div>
+        
+        <button class="order-btn" id="confirmOrderBtn">Confirm Order</button>
+    </div>
+
+    <!-- 4. CUSTOM SUCCESS POPUP -->
+    <div class="popup-overlay" id="successOverlay">
+        <div class="popup-modal">
+            <div class="popup-icon icon-success">✓</div>
+            <h2 class="popup-title">Order Confirmed!</h2>
+            <p class="popup-text" id="successMessage">Thank you! Your artisan coffee is being prepared.</p>
+            <button class="popup-btn" onclick="closePopups()">Continue</button>
+        </div>
+    </div>
+
+    <!-- 5. CUSTOM ERROR/ALERT POPUP -->
+    <div class="popup-overlay" id="errorOverlay">
+        <div class="popup-modal">
+            <div class="popup-icon icon-error">!</div>
+            <h2 class="popup-title">Oops!</h2>
+            <p class="popup-text" id="errorMessage">Something went wrong.</p>
+            <button class="popup-btn btn-error" onclick="closePopups()">Got it</button>
+        </div>
+    </div>
+
+    <script>
+
+        /* --- HIGH-PERFORMANCE PAGE TRANSITION --- */
+        document.addEventListener("DOMContentLoaded", () => {
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    const transitionLayer = document.getElementById('pageTransition');
+                    if (transitionLayer) {
+                        transitionLayer.classList.add('fade-out');
+                    }
+                }, 150); 
+            });
+        });
+
+        document.querySelectorAll('.nav-btn').forEach(link => {
+            /** @param {Event} e */
+            link.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                const targetURL = /** @type {HTMLAnchorElement} */ (this).href;
+                const transitionLayer = document.getElementById('pageTransition');
+                
+                if (transitionLayer) {
+                    transitionLayer.style.transition = "opacity 0.4s ease-in-out";
+                    transitionLayer.classList.remove('fade-out');
+                }
+                
+                setTimeout(() => { window.location.href = targetURL; }, 450);
+            });
+        });
+
+        /* --- MULTI-STEP BOOKING LOGIC --- */
+        /** @type {string} */ let selectedLocation = "";
+        /** @type {number|null} */ let selectedTable = null;
+
+        /** 
+         * Moves the user to the next booking step
+         * @param {number} step 
+         */
+        window.goToStep = function(step) {
+            document.querySelectorAll('.step-screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.progress-step').forEach((d, index) => {
+                if (index < step) d.classList.add('active');
+                else d.classList.remove('active');
+            });
+            
+            const targetStep = document.getElementById('step' + step);
+            if (targetStep) targetStep.classList.add('active');
+        };
+
+        /** 
+         * Selects the cafe location from the map
+         * @param {string} locName 
+         */
+        window.selectLocation = function(locName) {
+            selectedLocation = locName;
+            const displayLoc = document.getElementById('displayLocation');
+            if (displayLoc) displayLoc.innerText = locName;
+            window.goToStep(2);
+        };
+
+        /* --- TABLE GENERATION --- */
+        const tableGrid = document.getElementById('tableGrid');
+        const btnToStep3 = /** @type {HTMLButtonElement} */ (document.getElementById('btnToStep3'));
+        const finalTableDisp = document.getElementById('finalTableDisp');
+
+        if (tableGrid) {
+            for (let i = 1; i <= 15; i++) {
+                const tableEl = document.createElement('div');
+                const isBooked = Math.random() < 0.35; 
+                
+                tableEl.classList.add('cafe-table');
+                tableEl.classList.add(isBooked ? 'table-booked' : 'table-avail');
+                tableEl.innerHTML = `T-${i} <span>${isBooked ? 'Full' : '2-4 Seats'}</span>`;
+                
+                if (!isBooked) {
+                    tableEl.addEventListener('click', () => {
+                        document.querySelectorAll('.cafe-table').forEach(t => t.classList.remove('table-selected'));
+                        tableEl.classList.add('table-selected');
+                        selectedTable = i;
+                        
+                        if (btnToStep3) {
+                            btnToStep3.innerText = `Reserve Table ${i}`;
+                            btnToStep3.disabled = false;
+                        }
+                        if (finalTableDisp) {
+                            finalTableDisp.innerText = `Table ${i}`;
+                        }
+                    });
+                }
+                tableGrid.appendChild(tableEl);
+            }
+        }
+
+        /* --- FORM SUBMISSION & DIGITAL TICKET --- */
+        const bookingForm = document.getElementById('bookingForm');
+        if (bookingForm) {
+            /** @param {Event} e */
+            bookingForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const bNameInput = /** @type {HTMLInputElement} */ (document.getElementById('bName'));
+                const bDateInput = /** @type {HTMLInputElement} */ (document.getElementById('bDate'));
+                const bTimeInput = /** @type {HTMLInputElement} */ (document.getElementById('bTime'));
+
+                const tName = document.getElementById('tName');
+                const tLoc = document.getElementById('tLoc');
+                const tTable = document.getElementById('tTable');
+                const tTime = document.getElementById('tTime');
+
+                if (tName) tName.innerText = bNameInput.value;
+                if (tLoc) tLoc.innerText = selectedLocation;
+                if (tTable) tTable.innerText = `Table ${selectedTable}`;
+                if (tTime) tTime.innerText = `${bDateInput.value} @ ${bTimeInput.value}`;
+
+                const bookingSuccess = document.getElementById('bookingSuccess');
+                if (bookingSuccess) bookingSuccess.classList.add('active');
+            });
+        }
+
+      /* --- PAGE TRANSITION --- */
+document.addEventListener("DOMContentLoaded", () => { 
+    document.getElementById('pageTransition').classList.add('fade-out'); 
+});
+        document.querySelectorAll('.nav-btn').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                document.getElementById('pageTransition').classList.remove('fade-out');
+                setTimeout(() => { window.location.href = this.href; }, 800);
+            });
+        });
+
+        /* --- SEARCH ENGINE LOGIC --- */
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('.menu-item');
+            
+            items.forEach(item => {
+                const title = item.getAttribute('data-title').toLowerCase();
+                const desc = item.getAttribute('data-desc').toLowerCase();
+                
+                if (title.includes(query) || desc.includes(query)) {
+                    item.style.display = ''; 
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        /* --- CART & DRAWER STATE --- */
+        let cart = [];
+        let currentItemPrice = 0;
+        let currentQty = 1;
+
+        const drawerOverlay = document.getElementById('drawerOverlay');
+        const itemDrawer = document.getElementById('itemDrawer');
+        const cartDrawer = document.getElementById('cartDrawer');
+        const checkoutDrawer = document.getElementById('checkoutDrawer');
+        
+        const successOverlay = document.getElementById('successOverlay');
+        const errorOverlay = document.getElementById('errorOverlay');
+
+        function closeAllDrawers() {
+            itemDrawer.classList.remove('active');
+            cartDrawer.classList.remove('active');
+            checkoutDrawer.classList.remove('active');
+            drawerOverlay.classList.remove('active');
+        }
+        drawerOverlay.addEventListener('click', closeAllDrawers);
+
+        function closePopups() {
+            successOverlay.classList.remove('active');
+            errorOverlay.classList.remove('active');
+        }
+
+                /** @param {string} message */
+        function showCustomAlert(message) {
+            document.getElementById('errorMessage').innerText = message;
+            errorOverlay.classList.add('active');
+        }
+
+
+        // 1. OPEN ITEM DRAWER
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                currentItemPrice = parseFloat(item.getAttribute('data-price'));
+                document.getElementById('drawerTitle').innerText = item.getAttribute('data-title');
+                document.getElementById('drawerDesc').innerText = item.getAttribute('data-desc');
+                document.getElementById('drawerPrice').innerText = `₹${currentItemPrice}`;
+                document.getElementById('drawerImg').src = item.getAttribute('data-img');
+                
+                currentQty = 1; document.getElementById('qtyNum').innerText = currentQty;
+                itemDrawer.classList.add('active'); drawerOverlay.classList.add('active');
+            });
+        });
+
+        // 2. QUANTITY LOGIC
+        document.getElementById('btnPlus').addEventListener('click', () => { currentQty++; document.getElementById('qtyNum').innerText = currentQty; });
+        document.getElementById('btnMinus').addEventListener('click', () => { if (currentQty > 1) { currentQty--; document.getElementById('qtyNum').innerText = currentQty; } });
+
+        // 3. ADD TO CART
+        const floatingCartBtn = document.getElementById('floatingCartBtn');
+        document.getElementById('addToCartBtn').addEventListener('click', () => {
+            const title = document.getElementById('drawerTitle').innerText;
+            const existingItem = cart.find(item => item.name === title);
+            
+            if (existingItem) existingItem.qty += currentQty;
+            else cart.push({ name: title, price: currentItemPrice, qty: currentQty });
+
+            updateCartUI();
+            closeAllDrawers();
+            floatingCartBtn.classList.add('pop-anim');
+            setTimeout(() => floatingCartBtn.classList.remove('pop-anim'), 400);
+        });
+
+        // 4. OPEN CART
+        floatingCartBtn.addEventListener('click', () => {
+            renderCartItems();
+            cartDrawer.classList.add('active'); drawerOverlay.classList.add('active');
+        });
+
+        function updateCartUI() {
+            document.getElementById('cartBadge').innerText = cart.reduce((sum, item) => sum + item.qty, 0);
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cartItemsContainer');
+            container.innerHTML = '';
+
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="empty-cart-msg">Your cart is empty.</p>';
+                document.getElementById('billTotal').innerText = `₹0.00`;
+                return;
+            } 
+            
+            cart.forEach(item => {
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <h4>${item.name}</h4><p>₹${item.price} x ${item.qty}</p>
+                        </div>
+                        <div style="font-weight: bold; font-size: 1.1rem; color: var(--accent);">₹${item.price * item.qty}</div>
+                    </div>`;
+            });
+
+            // Math (Indian GST Calculation)
+            let subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let cgst = subtotal * 0.025; let sgst = subtotal * 0.025;
+            let total = subtotal + cgst + sgst;
+
+            document.getElementById('billSubtotal').innerText = `₹${subtotal.toFixed(2)}`;
+            document.getElementById('billCgst').innerText = `₹${cgst.toFixed(2)}`;
+            document.getElementById('billSgst').innerText = `₹${sgst.toFixed(2)}`;
+            document.getElementById('billTotal').innerText = `₹${total.toFixed(2)}`;
+            
+            document.getElementById('checkoutTotalAmount').innerText = `₹${total.toFixed(2)}`;
+        }
+
+        // 5. PROCEED TO CHECKOUT
+        document.getElementById('proceedToPayBtn').addEventListener('click', () => {
+            if (cart.length === 0) {
+                showCustomAlert("Please add some coffee to your cart first!");
+                return;
+            }
+            cartDrawer.classList.remove('active');
+            checkoutDrawer.classList.add('active');
+        });
+
+        // 6. CONFIRM FINAL ORDER
+        document.getElementById('confirmOrderBtn').addEventListener('click', () => {
+            const name = document.getElementById('custName').value;
+            const phone = document.getElementById('custPhone').value;
+            const address = document.getElementById('custAddress').value;
+            const pincode = document.getElementById('custPincode').value;
+
+            if(!name || !phone || !address || !pincode) {
+                showCustomAlert("Please fill in all required delivery details to continue.");
+                return;
+            }
+
+            closeAllDrawers();
+            
+            document.getElementById('successMessage').innerText = `Thank you, ${name.split(' ')[0]}! Your artisan coffee is being prepared and will be delivered to ${address}, PIN: ${pincode} shortly.`;
+            successOverlay.classList.add('active');
+            
+            cart = [];
+            updateCartUI();
+            
+            document.getElementById('custName').value = '';
+            document.getElementById('custPhone').value = '';
+            document.getElementById('custAddress').value = '';
+            document.getElementById('custLandmark').value = '';
+            document.getElementById('custPincode').value = '';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | Daily Roast</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-green: #142e22; 
+            --glass-coffee: rgba(105, 68, 41, 0.25); 
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-light: #f3efe8;
+            --accent: #D4A373;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+        body {
+            color: var(--text-light); overflow-x: hidden;
+            background-color: var(--bg-green);
+            background-image: radial-gradient(circle at 50% 0%, #1f4534 0%, #142e22 70%); background-attachment: fixed; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        .page-transition {
+            position: fixed; inset: 0; background: var(--bg-green); z-index: 9999;
+            pointer-events: none; transition: opacity 0.8s ease-in-out;
+        }
+        .page-transition.fade-out { opacity: 0; }
+
+        nav { padding: 2rem 5%; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 100; }
+        .logo { font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a { color: var(--text-light); text-decoration: none; font-weight: 500; transition: 0.3s; }
+        .nav-links a:hover { color: var(--accent); transform: translateY(-2px); }
+
+        .glass-lite {
+            background: var(--glass-coffee); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); box-shadow: 0 15px 35px rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden;
+        }
+
+        .about-container {
+            display: flex; flex-wrap: wrap; gap: 2rem; padding: 2rem 5% 5rem 5%; max-width: 1200px; margin: 0 auto; flex: 1; align-items: stretch;
+        }
+
+        .fade-up { opacity: 0; transform: translateY(30px); animation: fadeUpAnim 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        @keyframes fadeUpAnim { to { opacity: 1; transform: translateY(0); } }
+
+        .about-box { flex: 1; min-width: 300px; padding: 3.5rem; display: flex; flex-direction: column; justify-content: center; }
+        
+        .image-box {
+            flex: 1; min-width: 300px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); border: 1px solid var(--glass-border); min-height: 400px;
+            background: url('https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80') center/cover;
+        }
+
+        h1 { font-size: 3.5rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 1rem; line-height: 1.1; }
+        .accent-dot { color: var(--accent); } 
+        h2 { font-size: 1.4rem; font-weight: 800; color: var(--accent); margin-top: 1.5rem; margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        p { margin-bottom: 1.2rem; line-height: 1.8; font-weight: 300; opacity: 0.9; font-size: 1.05rem; }
+        
+        .location-item { margin-bottom: 0.8rem; }
+        .location-item strong { color: var(--text-light); font-weight: 500; }
+
+        .social-row { display: flex; gap: 1rem; margin-top: 2.5rem; }
+        .social-link {
+            width: 45px; height: 45px; border-radius: 50%; border: 1px solid var(--glass-border);
+            display: flex; justify-content: center; align-items: center; text-decoration: none; font-weight: 800;
+            color: var(--text-light); transition: 0.3s; background: rgba(255,255,255,0.05);
+        }
+        .social-link:hover { background: var(--accent); color: var(--bg-green); transform: translateY(-3px); border-color: var(--accent);}
+
+        @media (max-width: 768px) {
+            nav { flex-direction: column; gap: 1rem; }
+            h1 { font-size: 2.8rem; }
+            .about-box { padding: 2rem; }
+            .image-box { min-height: 250px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-transition" id="pageTransition"></div>
+
+    <nav>
+        <div class="logo">Daily Roast</div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-btn">Home</a>
+            <a href="menu.html" class="nav-btn">Menu</a>
+            <a href="booking.html" class="nav-btn">Book Table</a>
+        </div>
+    </nav>
+
+    <div class="about-container">
+        
+        <div class="image-box fade-up"></div>
+        
+        <div class="glass-lite about-box fade-up delay-1">
+            <h1>Our Story<span class="accent-dot">.</span></h1>
+            <p>Founded with a passion for minimalism and perfectly extracted espresso, Daily Roast is a modern take on the classic coffee house.</p>
+            <p>We source our beans from sustainable, single-origin farms and roast them in-house. Our signature aesthetic—transparent glass, dark woods, and pure flavors—reflects our belief that coffee should look exactly as beautiful as it tastes.</p>
+            <p style="font-style: italic; color: var(--accent); font-weight: 400; font-size: 1.2rem; margin-top: 1rem;">"Pouring art, one cup at a time."</p>
+        </div>
+
+        <div class="glass-lite about-box fade-up delay-2" style="background: rgba(0, 0, 0, 0.2);">
+            <h1>Visit Us<span class="accent-dot">.</span></h1>
+            
+            <h2>Our Cafes</h2>
+            <div class="location-item"><p>📍 <strong>Downtown District</strong><br>101 Glasswork Ave</p></div>
+            <div class="location-item"><p>📍 <strong>The Glasshouse Area</strong><br>42 Conservatory Lane</p></div>
+            <div class="location-item"><p>📍 <strong>Riverside Roast</strong><br>88 Riverbank Walk</p></div>
+            
+            <h2 style="margin-top: 2rem;">Contact</h2>
+            <p>hello@dailyroast.com<br>+1 (555) 123-4567</p>
+
+            <div class="social-row">
+                <a href="#" class="social-link">IG</a>
+                <a href="#" class="social-link">TW</a>
+                <a href="#" class="social-link">FB</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(() => {
+                const transitionLayer = document.getElementById('pageTransition');
+                if (transitionLayer) {
+                    transitionLayer.classList.add('fade-out');
+                    setTimeout(() => { transitionLayer.style.display = 'none'; }, 800); 
+                }
+            }, 100); 
+        });
+
+        document.querySelectorAll('.nav-btn').forEach(link => {
+            /** @param {Event} e */
+            link.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                const targetURL = /** @type {HTMLAnchorElement} */ (this).href;
+                const transitionLayer = document.getElementById('pageTransition');
+                
+                if (transitionLayer) {
+                    transitionLayer.style.display = 'block';
+                    void transitionLayer.offsetWidth;
+                    transitionLayer.style.transition = "opacity 0.4s ease-in-out";
+                    transitionLayer.classList.remove('fade-out');
+                }
+                setTimeout(() => { window.location.href = targetURL; }, 450);
+            });
+        });
+    </script>
+</body>
+</html>
